@@ -1,6 +1,8 @@
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
+function initialize() {
+
 let scale = 20;
 let maxMines = 40;
 let currentMines = 0;
@@ -26,7 +28,7 @@ while (currentMines < maxMines) {
     }
   }
 }
-
+ctx.clearRect(0,0,canvas.width,canvas.height);
 var img = new Image();
 img.onload = function () {
   for (i = 0; i < segArray.length; i++) {
@@ -98,4 +100,19 @@ function checkAdjacent(tiley, tilex) { //function to check how many mines are ar
   //the reason for all of these if statement is because if the segment is on an edge the program crashes because it called an array out of bounds
 }
 
+function getMousePos(canvas, evt) {
+  var rect = canvas.getBoundingClientRect();
+  return {
+    x: evt.clientX - rect.left,
+    y: Math.round(evt.clientY - rect.top)
+  };
+}
+
+canvas.addEventListener('mousemove', function(evt) {
+  var mousePos = getMousePos(canvas, evt);
+  console.log('Mouse position: ' + mousePos.x + ',' + mousePos.y);
+}, false);
+
 console.log(currentMines);
+
+}
