@@ -1,98 +1,28 @@
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
-function initialize() {
+let segArray = [];
+let shownArray = [];
 
-	ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
-	document.getElementById("canvas").addEventListener("mousedown", function(evt) {
-		var mousePos = getMousePos(canvas, evt);
-		mouseDown(mousePos);
-	});
+document.getElementById("canvas").addEventListener("mousedown", function(evt) {
+	var mousePos = getMousePos(canvas, evt);
+	mouseDown(mousePos);
+});
 
-	let scale = 20;
-	let maxMines = 40;
-	let currentMines = 0;
+let scale = 20;
+let maxMines = 40;
+let currentMines = 0;
 
-	var one = new Image();
-	var two = new Image();
-	var three = new Image();
-	var four = new Image();
-	var five = new Image();
-	var six = new Image();
-	var seven = new Image();
-	var eight = new Image();
-
-	let segArray = [];
-	let shownArray = [];
-
-	var i;
-	var j;
-	for (i = 0; i < 16; i++) {
-		segArray.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-		shownArray.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-	}
-
-	showArray();
-
-	while (currentMines < maxMines) {
-		for (i = 0; i < segArray.length; i++) {
-			for (j = 0; j < segArray[i].length; j++) {
-				if (segArray[i][j] === 0) {
-					let posMines = Math.random();
-					if (posMines < 0.1 && currentMines < maxMines) {
-						segArray[i][j] = 9;
-						currentMines += 1;
-					}
-				}
-			}
-		}
-	}
-
-	for (i = 0; i < segArray.length; i++) {
-		for (j = 0; j < segArray[i].length; j++) {
-			if (segArray[i][j] < 9) {
-				checkAdjacent(i, j);
-			}
-		}
-	}
-
-	function showArray() {
-    //ctx.clearRect(0,0,canvas.width,canvas.height);
-    var img = new Image();
-    img.onload = function () {
-    	for (i = 0; i < shownArray.length; i++) {
-    		for (j = 0; j < shownArray[i].length; j++) {
-    			if (shownArray[i][j] === 0) {
-    				ctx.beginPath();
-    				ctx.fillStyle = 'gray';
-    				ctx.fillRect(j*scale,i*scale,scale,scale);
-    				ctx.fillStyle = 'black';
-    				ctx.fillRect(j*scale,i*scale,scale-2,scale-2)
-    			} else if (shownArray[i][j] === 13) {
-    				ctx.beginPath();
-    				ctx.fillStyle = 'white';
-    				ctx.fillRect(j*scale,i*scale,scale,scale);
-    			} else if (shownArray[i][j] === 9) {
-    				ctx.drawImage(img, j*scale, i*scale, scale, scale);
-    			}
-    		}
-    	}
-    }
-    img.src = "images/mine.png";
-
-    showNumber(one, 1, "images/1.png");
-    showNumber(two, 2, "images/2.png");
-    showNumber(three, 3, "images/3.png");
-    showNumber(four, 4, "images/4.png");
-    showNumber(five, 5, "images/5.png");
-    showNumber(six, 6, "images/6.png");
-    showNumber(seven, 7, "images/7.png");
-    showNumber(eight, 8, "images/8.png");
-
-}
-
-console.log(segArray);
+var one = new Image();
+var two = new Image();
+var three = new Image();
+var four = new Image();
+var five = new Image();
+var six = new Image();
+var seven = new Image();
+var eight = new Image();
 
 function checkAdjacent(tiley, tilex) { //function to check how many mines are around a given segment
 	if (tiley - 1 >= 0) {
@@ -146,6 +76,14 @@ function checkAdjacent(tiley, tilex) { //function to check how many mines are ar
   //the reason for all of these if statement is because if the segment is on an edge the program crashes because it called an array out of bounds
 }
 
+function getMousePos(canvas, evt) {
+	var rect = canvas.getBoundingClientRect();
+	return {
+		x: evt.clientX - rect.left,
+		y: Math.round(evt.clientY - rect.top)
+	};
+}
+
 function mouseDown(mousePos) {
   //console.log('Mouse position: ' + (mousePos.x) + ',' + (mousePos.y));
   //console.log('Seg position: ' + Math.floor(mousePos.x / scale) + ',' + Math.floor(mousePos.y / scale));
@@ -153,12 +91,148 @@ function mouseDown(mousePos) {
   showArray();
 }
 
-function getMousePos(canvas, evt) {
-	var rect = canvas.getBoundingClientRect();
-	return {
-		x: evt.clientX - rect.left,
-		y: Math.round(evt.clientY - rect.top)
-	};
+var i;
+var j;
+for (i = 0; i < 16; i++) {
+	segArray.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+	shownArray.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+}
+
+showArray();
+
+while (currentMines < maxMines) {
+	for (i = 0; i < segArray.length; i++) {
+		for (j = 0; j < segArray[i].length; j++) {
+			if (segArray[i][j] === 0) {
+				let posMines = Math.random();
+				if (posMines < 0.1 && currentMines < maxMines) {
+					segArray[i][j] = 9;
+					currentMines += 1;
+				}
+			}
+		}
+	}
+}
+
+for (i = 0; i < segArray.length; i++) {
+	for (j = 0; j < segArray[i].length; j++) {
+		if (segArray[i][j] < 9) {
+			checkAdjacent(j, i);
+		}
+	}
+}
+
+function showArray() {
+    //ctx.clearRect(0,0,canvas.width,canvas.height);
+    var img = new Image();
+    img.onload = function () {
+    	for (i = 0; i < shownArray.length; i++) {
+    		for (j = 0; j < shownArray[i].length; j++) {
+    			if (shownArray[i][j] === 0) {
+    				ctx.beginPath();
+    				ctx.fillStyle = 'gray';
+    				ctx.fillRect(j*scale,i*scale,scale,scale);
+    				ctx.fillStyle = 'black';
+    				ctx.fillRect(j*scale,i*scale,scale-2,scale-2)
+    			} else if (shownArray[i][j] === 13) {
+    				ctx.beginPath();
+    				ctx.fillStyle = 'white';
+    				ctx.fillRect(j*scale,i*scale,scale,scale);
+    				revealOnEmpty(j, i);
+    			} else if (shownArray[i][j] === 9) {
+    				ctx.drawImage(img, j*scale, i*scale, scale, scale);
+    			}
+    		}
+    	}
+    }
+    img.src = "images/mine.png";
+
+    showNumber(one, 1, "images/1.png");
+    showNumber(two, 2, "images/2.png");
+    showNumber(three, 3, "images/3.png");
+    showNumber(four, 4, "images/4.png");
+    showNumber(five, 5, "images/5.png");
+    showNumber(six, 6, "images/6.png");
+    showNumber(seven, 7, "images/7.png");
+    showNumber(eight, 8, "images/8.png");
+
+    console.log(segArray);
+
+
+
+
+
+
+
+function revealOnEmpty(j, i) {
+	if (shownArray[j][i] === 13) {
+		try { 
+			shownArray[j - 1][i - 1] = segArray[j - 1][i - 1];
+		} catch {
+		} 
+		try {
+			shownArray[j - 1][i] = segArray[j - 1][i];
+		} catch {
+		} 
+		try {
+			shownArray[j - 1][i + 1] = segArray[j - 1][i + 1];
+		} catch {
+		}
+		try {
+			shownArray[j][i - 1] = segArray[j][i - 1];
+		} catch {
+		}
+		try {
+			shownArray[j][i + 1] = segArray[j][i + 1];
+		} catch {
+		} 
+		try {
+			shownArray[j + 1][i - 1] = segArray[j + 1][i - 1];
+		} catch {
+		}
+		try {
+			shownArray[j + 1][i] = segArray[j + 1][i];
+		} catch {
+		} 
+		try {
+			shownArray[j + 1][i + 1] = segArray[j + 1][i + 1];
+		} catch {
+
+		}
+
+		console.log(shownArray);
+	}
+
+	/*if (shownArray[j][i] === 13) {
+
+	if (j - 1 >= 0) {
+		if (i - 1 >= 0) {
+			shownArray[j - 1][i - 1] = segArray[j - 1][i - 1];
+		}
+		shownArray[j - 1][i] = segArray[j - 1][i];
+		if (i + 1 < 16) {
+			shownArray[j - 1][i + 1] = segArray[j - 1][i + 1];
+		}
+	}
+
+	if (i - 1 >= 0) {
+		shownArray[j][i - 1] = segArray[j][i - 1];
+	}
+
+	if (i + 1 < 16) {
+		shownArray[j][i + 1] = segArray[j][i + 1];
+	}
+
+	if (j + 1 < 16) {
+		if (i - 1 >= 0) {
+			shownArray[j + 1][i - 1] = segArray[j + 1][i - 1];
+		}
+		shownArray[j + 1][i] = segArray[j + 1][i];
+		if (i + 1 < 16) {
+			shownArray[j + 1][i + 1] = segArray[j + 1][i + 1];
+		}
+	}
+}*/
 }
 
 function showNumber(image, num, source) {
