@@ -1,9 +1,6 @@
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
-let segArray = [];
-let shownArray = [];
-
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
 document.getElementById("canvas").addEventListener("mousedown", function(evt) {
@@ -11,7 +8,7 @@ document.getElementById("canvas").addEventListener("mousedown", function(evt) {
 	mouseDown(mousePos);
 });
 
-let scale = 20;
+let scale = 40;
 let maxMines = 40;
 let currentMines = 0;
 
@@ -23,6 +20,82 @@ var five = new Image();
 var six = new Image();
 var seven = new Image();
 var eight = new Image();
+
+let segArray = [];
+let shownArray = [];
+
+let tiley;
+let tilex;
+
+var i;
+var j;
+for (i = 0; i < 16; i++) {
+	segArray.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+	shownArray.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+}
+
+showArray();
+
+while (currentMines < maxMines) {
+	for (i = 0; i < segArray.length; i++) {
+		for (j = 0; j < segArray[i].length; j++) {
+			if (segArray[i][j] === 0) {
+				let posMines = Math.random();
+				if (posMines < 0.1 && currentMines < maxMines) {
+					segArray[i][j] = 9;
+					currentMines += 1;
+				}
+			}
+		}
+	}
+}
+
+for (i = 0; i < segArray.length; i++) {
+	for (j = 0; j < segArray[i].length; j++) {
+		if (segArray[i][j] < 9) {
+			checkAdjacent(i, j);
+		}
+	}
+}
+
+function showArray() {
+//ctx.clearRect(0,0,canvas.width,canvas.height);
+var img = new Image();
+img.onload = function () {
+	for (i = 0; i < shownArray.length; i++) {
+		for (j = 0; j < shownArray[i].length; j++) {
+			if (shownArray[i][j] === 0) {
+				ctx.beginPath();
+				ctx.fillStyle = 'gray';
+				ctx.fillRect(j*scale,i*scale,scale,scale);
+				ctx.fillStyle = 'black';
+				ctx.fillRect(j*scale,i*scale,scale-2,scale-2)
+			} else if (shownArray[i][j] === 13) {
+				ctx.beginPath();
+				ctx.fillStyle = 'white';
+				ctx.fillRect(j*scale,i*scale,scale,scale);
+			} else if (shownArray[i][j] === 9) {
+				ctx.drawImage(img, j*scale, i*scale, scale, scale);
+			} /*else if (shownArray[i][j] === 13) {
+				checkEmpty(i, j);
+			}*/
+		}
+	}
+}
+img.src = "images/mine.png";
+
+showNumber(one, 1, "images/1.png");
+showNumber(two, 2, "images/2.png");
+showNumber(three, 3, "images/3.png");
+showNumber(four, 4, "images/4.png");
+showNumber(five, 5, "images/5.png");
+showNumber(six, 6, "images/6.png");
+showNumber(seven, 7, "images/7.png");
+showNumber(eight, 8, "images/8.png");
+
+}
+
+console.log(segArray);
 
 function checkAdjacent(tiley, tilex) { //function to check how many mines are around a given segment
 	if (tiley - 1 >= 0) {
@@ -73,7 +146,26 @@ function checkAdjacent(tiley, tilex) { //function to check how many mines are ar
 		segArray[tiley][tilex] = 13;
 	}
 
-  //the reason for all of these if statement is because if the segment is on an edge the program crashes because it called an array out of bounds
+//the reason for all of these if statement is because if the segment is on an edge the program crashes because it called an array out of bounds
+}
+
+function mouseDown(mousePos) {
+//console.log('Mouse position: ' + (mousePos.x) + ',' + (mousePos.y));
+//console.log('Seg position: ' + Math.floor(mousePos.x / scale) + ',' + Math.floor(mousePos.y / scale));
+	shownArray[Math.floor(mousePos.y / scale)][Math.floor(mousePos.x / scale)] = segArray[Math.floor(mousePos.y / scale)][Math.floor(mousePos.x / scale)];
+	if (segArray[Math.floor(mousePos.y / scale)][Math.floor(mousePos.x / scale)] === 13) {
+		revealEmpty(Math.floor(mousePos.y / scale), Math.floor(mousePos.x / scale));
+	}
+	checkEmpty(Math.floor(mousePos.y / scale), Math.floor(mousePos.x / scale));
+
+	tiley = Math.floor(mousePos.y / scale);
+	tilex = Math.floor(mousePos.x / scale);
+
+	checkEmpty(tiley, tilex);
+
+
+
+	showArray();
 }
 
 function getMousePos(canvas, evt) {
@@ -82,157 +174,6 @@ function getMousePos(canvas, evt) {
 		x: evt.clientX - rect.left,
 		y: Math.round(evt.clientY - rect.top)
 	};
-}
-
-function mouseDown(mousePos) {
-  //console.log('Mouse position: ' + (mousePos.x) + ',' + (mousePos.y));
-  //console.log('Seg position: ' + Math.floor(mousePos.x / scale) + ',' + Math.floor(mousePos.y / scale));
-  shownArray[Math.floor(mousePos.y / scale)][Math.floor(mousePos.x / scale)] = segArray[Math.floor(mousePos.y / scale)][Math.floor(mousePos.x / scale)]
-  showArray();
-}
-
-var i;
-var j;
-for (i = 0; i < 16; i++) {
-	segArray.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-	shownArray.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-}
-
-showArray();
-
-while (currentMines < maxMines) {
-	for (i = 0; i < segArray.length; i++) {
-		for (j = 0; j < segArray[i].length; j++) {
-			if (segArray[i][j] === 0) {
-				let posMines = Math.random();
-				if (posMines < 0.1 && currentMines < maxMines) {
-					segArray[i][j] = 9;
-					currentMines += 1;
-				}
-			}
-		}
-	}
-}
-
-for (i = 0; i < segArray.length; i++) {
-	for (j = 0; j < segArray[i].length; j++) {
-		if (segArray[i][j] < 9) {
-			checkAdjacent(j, i);
-		}
-	}
-}
-
-function showArray() {
-    //ctx.clearRect(0,0,canvas.width,canvas.height);
-    var img = new Image();
-    img.onload = function () {
-    	for (i = 0; i < shownArray.length; i++) {
-    		for (j = 0; j < shownArray[i].length; j++) {
-    			if (shownArray[i][j] === 0) {
-    				ctx.beginPath();
-    				ctx.fillStyle = 'gray';
-    				ctx.fillRect(j*scale,i*scale,scale,scale);
-    				ctx.fillStyle = 'black';
-    				ctx.fillRect(j*scale,i*scale,scale-2,scale-2)
-    			} else if (shownArray[i][j] === 13) {
-    				ctx.beginPath();
-    				ctx.fillStyle = 'white';
-    				ctx.fillRect(j*scale,i*scale,scale,scale);
-    				revealOnEmpty(j, i);
-    			} else if (shownArray[i][j] === 9) {
-    				ctx.drawImage(img, j*scale, i*scale, scale, scale);
-    			}
-    		}
-    	}
-    }
-    img.src = "images/mine.png";
-
-    showNumber(one, 1, "images/1.png");
-    showNumber(two, 2, "images/2.png");
-    showNumber(three, 3, "images/3.png");
-    showNumber(four, 4, "images/4.png");
-    showNumber(five, 5, "images/5.png");
-    showNumber(six, 6, "images/6.png");
-    showNumber(seven, 7, "images/7.png");
-    showNumber(eight, 8, "images/8.png");
-
-    console.log(segArray);
-
-
-
-
-
-
-
-function revealOnEmpty(j, i) {
-	if (shownArray[j][i] === 13) {
-		try { 
-			shownArray[j - 1][i - 1] = segArray[j - 1][i - 1];
-		} catch {
-		} 
-		try {
-			shownArray[j - 1][i] = segArray[j - 1][i];
-		} catch {
-		} 
-		try {
-			shownArray[j - 1][i + 1] = segArray[j - 1][i + 1];
-		} catch {
-		}
-		try {
-			shownArray[j][i - 1] = segArray[j][i - 1];
-		} catch {
-		}
-		try {
-			shownArray[j][i + 1] = segArray[j][i + 1];
-		} catch {
-		} 
-		try {
-			shownArray[j + 1][i - 1] = segArray[j + 1][i - 1];
-		} catch {
-		}
-		try {
-			shownArray[j + 1][i] = segArray[j + 1][i];
-		} catch {
-		} 
-		try {
-			shownArray[j + 1][i + 1] = segArray[j + 1][i + 1];
-		} catch {
-
-		}
-
-		console.log(shownArray);
-	}
-
-	/*if (shownArray[j][i] === 13) {
-
-	if (j - 1 >= 0) {
-		if (i - 1 >= 0) {
-			shownArray[j - 1][i - 1] = segArray[j - 1][i - 1];
-		}
-		shownArray[j - 1][i] = segArray[j - 1][i];
-		if (i + 1 < 16) {
-			shownArray[j - 1][i + 1] = segArray[j - 1][i + 1];
-		}
-	}
-
-	if (i - 1 >= 0) {
-		shownArray[j][i - 1] = segArray[j][i - 1];
-	}
-
-	if (i + 1 < 16) {
-		shownArray[j][i + 1] = segArray[j][i + 1];
-	}
-
-	if (j + 1 < 16) {
-		if (i - 1 >= 0) {
-			shownArray[j + 1][i - 1] = segArray[j + 1][i - 1];
-		}
-		shownArray[j + 1][i] = segArray[j + 1][i];
-		if (i + 1 < 16) {
-			shownArray[j + 1][i + 1] = segArray[j + 1][i + 1];
-		}
-	}
-}*/
 }
 
 function showNumber(image, num, source) {
@@ -247,4 +188,73 @@ function showNumber(image, num, source) {
 	}
 	image.src = source;
 }
+
+function revealEmpty(tiley, tilex) { //function to check how many mines are around a given segment
+	if (tiley - 1 >= 0) {
+		if (tilex - 1 >= 0) {
+			shownArray[tiley - 1][tilex - 1] = segArray[tiley - 1][tilex - 1];
+		}
+		shownArray[tiley - 1][tilex] = segArray[tiley - 1][tilex];
+		if (tilex + 1 < 16) {
+			shownArray[tiley - 1][tilex + 1] = segArray[tiley - 1][tilex + 1];
+		}
+	}
+
+	if (tilex - 1 >= 0) {
+		shownArray[tiley][tilex - 1] = segArray[tiley][tilex - 1];
+	}
+
+	if (tilex + 1 < 16) {
+		shownArray[tiley][tilex + 1] = segArray[tiley][tilex + 1];
+	}
+
+	if (tiley + 1 < 16) {
+		if (tilex - 1 >= 0) {
+			shownArray[tiley + 1][tilex - 1] = segArray[tiley + 1][tilex - 1];
+		}
+		shownArray[tiley + 1][tilex] = segArray[tiley + 1][tilex];
+		if (tilex + 1 < 16) {
+			shownArray[tiley + 1][tilex + 1] = segArray[tiley + 1][tilex + 1];
+		}
+	}
+
+//the reason for all of these if statement is because if the segment is on an edge the program crashes because it called an array out of bounds
+}
+
+function checkEmpty(tiley, tilex) {
+
+	let newTiley = tiley;
+	let newTilex = tilex;
+
+	while (newTiley < 15 && segArray[newTiley][newTilex] === 13) {
+		revealEmpty(newTiley, newTilex);
+		newTiley+= 1;
+	}
+
+	newTiley = tiley;
+	newTilex = tilex;
+
+	while (newTiley > 0 && segArray[newTiley][newTilex] === 13) {
+		revealEmpty(newTiley, newTilex);
+		newTiley -= 1;
+	}
+
+	newTiley = tiley;
+	newTilex = tilex;
+
+	while (newTilex < 15 && segArray[newTiley][newTilex] === 13) {
+		revealEmpty(newTiley, newTilex);
+		newTilex += 1;
+	}
+
+	newTiley = tiley;
+	newTilex = tilex;
+	
+	while (newTilex > 0 && segArray[newTiley][newTilex] === 13) {
+		revealEmpty(newTiley, newTilex);
+		newTilex -= 1;
+	}
+
+	//shownArray[tiley][tilex] = 15;
+	console.log(shownArray);
 }
