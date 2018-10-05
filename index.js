@@ -13,14 +13,27 @@ let currentNumberOfMines = 0; //the current number of mines placed on board
 let masterCellArray = [];
 let playerCellArray = [];
 
-var one = new Image();
-var two = new Image();
-var three = new Image();
-var four = new Image();
-var five = new Image();
-var six = new Image();
-var seven = new Image();
-var eight = new Image();
+let one = new Image();
+let two = new Image();
+let three = new Image();
+let four = new Image();
+let five = new Image();
+let six = new Image();
+let seven = new Image();
+let eight = new Image();
+let mine = new Image();
+
+let mouseDown;
+let mousePos;
+let mouseX;
+let mouseY;
+
+initializeArray(masterCellArray, cells);
+initializeArray(playerCellArray, cells);
+placeMines();
+checkAdjacent();
+
+showArray();
 
 function loopThroughEveryCell(array) {
 	for (let i = 0; i < cells; i++) {
@@ -62,6 +75,8 @@ function checkAdjacent() {
 			checkCellsAdjacent(i, j, i+1, j-1);
 			checkCellsAdjacent(i, j, i+1, j);
 			checkCellsAdjacent(i, j, i+1, j+1);
+
+			if (masterCellArray[i][j] === 0) masterCellArray[i][j] = 13;
 		}
 	}
 }
@@ -76,55 +91,40 @@ function checkCellsAdjacent(y, x, checky, checkx) {
 	} catch { }
 }
 
-initializeArray(masterCellArray, cells);
-initializeArray(playerCellArray, cells);
-placeMines();
-checkAdjacent();
-
-console.log(masterCellArray);
-
-playerCellArray = masterCellArray;
-
-showArray();
-
 function showArray() {
-	let img = new Image();
-	img.onload = function () {
-		for (i = 0; i < playerCellArray.length; i++) {
-			for (j = 0; j < playerCellArray[i].length; j++) {
-				if (playerCellArray[i][j] === 0) {
-					ctx.beginPath();
-					ctx.fillStyle = 'gray';
-					ctx.fillRect(j*scale,i*scale,scale,scale);
-					ctx.fillStyle = 'black';
-					ctx.fillRect(j*scale,i*scale,scale-2,scale-2)
-				} else if (playerCellArray[i][j] === 13) {
-					ctx.beginPath();
-					ctx.fillStyle = 'white';
-					ctx.fillRect(j*scale,i*scale,scale,scale);
-				} else if (playerCellArray[i][j] === 9) {
-					ctx.drawImage(img, j*scale, i*scale, scale, scale);
-				}
+	showImageOnCell(one, 1, "images/1.png");
+	showImageOnCell(two, 2, "images/2.png");
+	showImageOnCell(three, 3, "images/3.png");
+	showImageOnCell(four, 4, "images/4.png");
+	showImageOnCell(five, 5, "images/5.png");
+	showImageOnCell(six, 6, "images/6.png");
+	showImageOnCell(seven, 7, "images/7.png");
+	showImageOnCell(eight, 8, "images/8.png");
+	showImageOnCell(mine, 9, "images/mine.png");
+
+	for (i = 0; i < playerCellArray.length; i++) {
+		for (j = 0; j < playerCellArray[i].length; j++) {
+			if (playerCellArray[i][j] === 0) {
+				ctx.beginPath();
+				ctx.fillStyle = 'gray';
+				ctx.fillRect(j*scale,i*scale,scale,scale);
+				ctx.fillStyle = 'black';
+				ctx.fillRect(j*scale,i*scale,scale-2,scale-2)
+			} else if (playerCellArray[i][j] === 13) {
+				ctx.beginPath();
+				ctx.fillStyle = 'white';
+				ctx.fillRect(j*scale,i*scale,scale,scale);
+				onEmpty(i, j);
 			}
 		}
 	}
-	img.src = "images/mine.png";
-
-	showNumber(one, 1, "images/1.png");
-	showNumber(two, 2, "images/2.png");
-	showNumber(three, 3, "images/3.png");
-	showNumber(four, 4, "images/4.png");
-	showNumber(five, 5, "images/5.png");
-	showNumber(six, 6, "images/6.png");
-	showNumber(seven, 7, "images/7.png");
-	showNumber(eight, 8, "images/8.png");
 }
 
-function showNumber(image, num, source) {
+function showImageOnCell(image, cellValue, source) {
 	image.onload = function() {
 		for (i = 0; i < playerCellArray.length; i++) {
 			for (j = 0; j < playerCellArray[i].length; j++) {
-				if (playerCellArray[i][j] === num) {
+				if (playerCellArray[i][j] === cellValue) {
 					ctx.drawImage(image, j*scale, i*scale, scale, scale);
 				}
 			}
@@ -133,21 +133,47 @@ function showNumber(image, num, source) {
 	image.src = source;
 }
 
-function getMousePos(canvas, evt) {
-  var rect = canvas.getBoundingClientRect();
-  return {
-    x: evt.clientX - rect.left,
-    y: Math.round(evt.clientY - rect.top)
-  };
+function leftPressed(y, x) {
+	playerCellArray[y][x] = masterCellArray[y][x];
 }
 
-canvas.addEventListener('mousemove', function(evt) {
-  var mousePos = getMousePos(canvas, evt);
-  //console.log('Mouse position: ' + mousePos.x + ',' + mousePos.y);
-}, false);
+function getMousePos(evt) {
+	var rect = canvas.getBoundingClientRect();
+	return {
+    	x: Math.round(evt.clientX - rect.left),
+    	y: Math.round(evt.clientY - rect.top)
+  	};
+}
+
+document.body.onmousedown = function(evt) {
+	mouseDown = evt.button;
+	mousePos = getMousePos(evt);
+	mouseX = Math.floor(mousePos.x / scale);
+	mouseY = Math.floor(mousePos.y / scale);
+	if (mouseDown === 0) {
+		leftPressed(mouseY, mouseX);
+	}
+}
+
+function onEmpty(y, x) {
+	revealEmpty(y-1, x-1);
+	revealEmpty(y-1, x);
+	revealEmpty(y-1, x+1);
+	revealEmpty(y, x-1);
+	revealEmpty(y, x+1);
+	revealEmpty(y+1, x-1);
+	revealEmpty(y+1, x);
+	revealEmpty(y+1, x+1);
+}
+
+function revealEmpty(checky, checkx) {
+	try {
+		leftPressed(checky, checkx);
+	} catch { }
+}
 
 function frame() {
-//location.reload();
+	showArray();
 }
 
 //hi luke, it's maher, I helped you in this project, better give me credit when you hand it in. Mercer you're gonna read this sooo you're a witness.
