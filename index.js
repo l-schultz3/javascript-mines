@@ -1,7 +1,7 @@
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
-var id = setInterval(frame, 10);
+var id = setInterval(frame, 25);
 
 let scale = 40; //size of each cell
 let size = 640; //side length of grid
@@ -22,16 +22,21 @@ let six = new Image();
 let seven = new Image();
 let eight = new Image();
 let mine = new Image();
+let flag = new Image();
 
 let mouseDown;
 let mousePos;
 let mouseX;
 let mouseY;
 
+let checkForClosedCells;
+let win = false;
+let flagMode = false;
+
+let gameStarted = false;
+
 initializeArray(masterCellArray, cells);
 initializeArray(playerCellArray, cells);
-placeMines();
-checkAdjacent();
 
 showArray();
 
@@ -55,9 +60,11 @@ function placeMines() {
 	while (currentNumberOfMines < numberOfMines) {
 		for (let i = 0; i < cells; i++) {
 			for (let j = 0; j < cells; j++) {
-				if (Math.random() < 0.1) {
-					masterCellArray[i][j] = 9;
-					currentNumberOfMines++;
+				if (masterCellArray[i][j] != 15) {
+					if (Math.random() < 0.1) {
+						masterCellArray[i][j] = 9;
+						currentNumberOfMines++;
+					}
 				}
 			}
 		}
@@ -101,6 +108,7 @@ function showArray() {
 	showImageOnCell(seven, 7, "images/7.png");
 	showImageOnCell(eight, 8, "images/8.png");
 	showImageOnCell(mine, 9, "images/mine.png");
+	showImageOnCell(flag, 12, "images/flag.png");
 
 	for (i = 0; i < playerCellArray.length; i++) {
 		for (j = 0; j < playerCellArray[i].length; j++) {
@@ -133,8 +141,42 @@ function showImageOnCell(image, cellValue, source) {
 	image.src = source;
 }
 
-function leftPressed(y, x) {
-	playerCellArray[y][x] = masterCellArray[y][x];
+function leftPressed(y, x, checkFlag) {
+	if (masterCellArray[y][x] === 9) {
+		location.reload();
+	} else {
+		playerCellArray[y][x] = masterCellArray[y][x];
+		checkWin();
+	}
+}
+
+function checkWin() {
+	checkForClosedCells = false;
+
+	for (let i = 0; i < playerCellArray.length; i++) {
+		for (let j = 0; j < playerCellArray[i].length; j++) {
+			if (playerCellArray[i][j] === 0 && masterCellArray[i][j] === 9) {
+				checkForClosedCells = true;
+			}
+		}
+	}
+	
+	if (checkForClosedCells === false) {
+		console.log("won");
+		win = true;
+	}
+}
+
+function toggleFlagMode() {
+	flagMode = !flagMode;
+}
+
+function placeFlag(y, x) {
+	if (playerCellArray[y][x] === 12) {
+		playerCellArray[y][x] = 0;
+	} else {
+		playerCellArray[y][x] = 12;
+	}
 }
 
 function getMousePos(evt) {
@@ -151,8 +193,42 @@ document.body.onmousedown = function(evt) {
 	mouseX = Math.floor(mousePos.x / scale);
 	mouseY = Math.floor(mousePos.y / scale);
 	if (mouseDown === 0) {
-		leftPressed(mouseY, mouseX);
+		if (gameStarted) {
+			if (flagMode) {
+				placeFlag(mouseY, mouseX);
+			} else {
+				if (playerCellArray[mouseY][mouseX] != 12) {
+					leftPressed(mouseY, mouseX);
+				}
+			}
+		} else {
+			runHoldPlace(15);
+			placeMines();
+			runHoldPlace(0);
+			checkAdjacent();
+
+			leftPressed(mouseY, mouseX);
+
+			gameStarted = true;
+		}
 	}
+}
+
+function runHoldPlace(value) {
+	holdPlace(mouseY-1, mouseX-1, value);
+	holdPlace(mouseY-1, mouseX, value);
+	holdPlace(mouseY-1, mouseX+1, value);
+	holdPlace(mouseY, mouseX-1, value);
+	holdPlace(mouseY, mouseX+1, value);
+	holdPlace(mouseY+1, mouseX-1, value);
+	holdPlace(mouseY+1, mouseX, value);
+	holdPlace(mouseY+1, mouseX+1, value);
+}
+
+function holdPlace(y, x, value) {
+	try {
+		masterCellArray[y][x] = value;
+	} catch { }
 }
 
 function onEmpty(y, x) {
