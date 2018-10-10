@@ -9,16 +9,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style type="text/css">
-    canvas { border: 1px solid black; }
+        canvas { 
+            border: 1px solid black;
+            margin-top: -5%;
+        }
+        button {
+            position: relative;
+        }
+        .noselect {
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+}
 	</style>
 </head>
-<body>
+<body oncontextmenu="return false" class="noselect">
     <h3>mines</h3>
+    <p id="flag"></p>
+    <p id="numMines"></p>
 
+
+    <div class="slidecontainer">
+        <input type="range" min="5" max="100" value="40" class="slider" id="mineSlider">
+    </div>
+
+    <button onclick="restart()">restart</button>
     <button onclick="toggleFlagMode()">flag</button>
 
-    <canvas id="canvas" width="640" height="640" style="margin-left: 200px;"></canvas>
+    <canvas id="canvas" width="500" height="500" style="margin-left: 200px;"></canvas>
 
-        <script  src="index.js"></script>
+    <script  src="index.js"></script>
 </body>
 </html>

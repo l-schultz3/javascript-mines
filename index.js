@@ -3,12 +3,16 @@ var ctx = canvas.getContext('2d');
 
 var id = setInterval(frame, 25);
 
-let scale = 40; //size of each cell
-let size = 640; //side length of grid
-let cells = size / scale; //number of cells on side
+let slider = document.getElementById("mineSlider");
+let output = document.getElementById("numMines");
+
+let size = canvas.width; //side length of grid
+let cells = 16; //number of cells on side
+let scale = size / cells; //size of each cell
 
 let numberOfMines = 40; //the total number of mines that need to placed on board
 let currentNumberOfMines = 0; //the current number of mines placed on board
+let numberOfFlags = 0;
 
 let masterCellArray = [];
 let playerCellArray = [];
@@ -23,14 +27,18 @@ let seven = new Image();
 let eight = new Image();
 let mine = new Image();
 let flag = new Image();
+let loseImage = new Image();
+let winImage = new Image();
 
 let mouseDown;
 let mousePos;
 let mouseX;
 let mouseY;
+let charCode;
 
 let checkForClosedCells;
 let win = false;
+let lose = false;
 let flagMode = false;
 
 let gameStarted = false;
@@ -39,6 +47,16 @@ initializeArray(masterCellArray, cells);
 initializeArray(playerCellArray, cells);
 
 showArray();
+
+document.onkeypress = function(evt) {
+	evt = evt || window.event;
+	charCode = evt.keyCode || evt.which;
+	if (charCode === 102) {
+		toggleFlagMode();
+	} else if (charCode === 114) {
+		restart();
+	}
+};
 
 function loopThroughEveryCell(array) {
 	for (let i = 0; i < cells; i++) {
@@ -61,7 +79,7 @@ function placeMines() {
 		for (let i = 0; i < cells; i++) {
 			for (let j = 0; j < cells; j++) {
 				if (masterCellArray[i][j] != 15) {
-					if (Math.random() < 0.1) {
+					if (Math.random() < 0.1 && currentNumberOfMines < numberOfMines) {
 						masterCellArray[i][j] = 9;
 						currentNumberOfMines++;
 					}
@@ -142,12 +160,8 @@ function showImageOnCell(image, cellValue, source) {
 }
 
 function leftPressed(y, x, checkFlag) {
-	if (masterCellArray[y][x] === 9) {
-		location.reload();
-	} else {
-		playerCellArray[y][x] = masterCellArray[y][x];
-		checkWin();
-	}
+	playerCellArray[y][x] = masterCellArray[y][x];
+	checkWin();
 }
 
 function checkWin() {
@@ -155,14 +169,15 @@ function checkWin() {
 
 	for (let i = 0; i < playerCellArray.length; i++) {
 		for (let j = 0; j < playerCellArray[i].length; j++) {
-			if (playerCellArray[i][j] === 0 && masterCellArray[i][j] === 9) {
+			if (playerCellArray[i][j] === 0 && masterCellArray[i][j] != 9) {
 				checkForClosedCells = true;
+			} else if (playerCellArray[i][j] === 9) {
+				lose = true;
 			}
 		}
 	}
 	
-	if (checkForClosedCells === false) {
-		console.log("won");
+	if (checkForClosedCells === false && lose === false) {
 		win = true;
 	}
 }
@@ -174,8 +189,10 @@ function toggleFlagMode() {
 function placeFlag(y, x) {
 	if (playerCellArray[y][x] === 12) {
 		playerCellArray[y][x] = 0;
+		numberOfFlags--;
 	} else {
 		playerCellArray[y][x] = 12;
+		numberOfFlags++;
 	}
 }
 
@@ -211,6 +228,8 @@ document.body.onmousedown = function(evt) {
 
 			gameStarted = true;
 		}
+	} else if (mouseDown === 2) {
+		placeFlag(mouseY, mouseX);
 	}
 }
 
@@ -219,6 +238,7 @@ function runHoldPlace(value) {
 	holdPlace(mouseY-1, mouseX, value);
 	holdPlace(mouseY-1, mouseX+1, value);
 	holdPlace(mouseY, mouseX-1, value);
+	holdPlace(mouseY, mouseX, value);
 	holdPlace(mouseY, mouseX+1, value);
 	holdPlace(mouseY+1, mouseX-1, value);
 	holdPlace(mouseY+1, mouseX, value);
@@ -249,7 +269,51 @@ function revealEmpty(checky, checkx) {
 }
 
 function frame() {
+	document.getElementById("flag").innerHTML = "Number of Flags: " + numberOfFlags;
+
+	if (win) {
+		winImage.onload = function() {
+			ctx.drawImage(winImage, 0, 0, size, size);
+		}
+		winImage.src = "images/win.jpg";
+	} else if (lose) {
+		loseImage.onload = function() {
+			ctx.drawImage(loseImage, 0, 0, size, size);
+		}
+		loseImage.src = "images/lose.jpg";
+	} else {
+		showArray();
+	}
+}
+
+function restart() {
+	currentNumberOfMines = 0; //the current number of mines placed on board
+	numberOfFlags = 0;
+
+	masterCellArray = [];
+	playerCellArray = [];
+	win = false;
+	lose = false;
+	flagMode = false;
+
+	console.log(masterCellArray);
+
+	gameStarted = false;
+
+	initializeArray(masterCellArray, cells);
+	initializeArray(playerCellArray, cells);
+
+	console.log(masterCellArray);
+
 	showArray();
 }
 
 //hi luke, it's maher, I helped you in this project, better give me credit when you hand it in. Mercer you're gonna read this sooo you're a witness.
+
+output.innerHTML = "Number of Mines: " + slider.value; // Display the default slider value
+
+// Update the current slider value (each time you drag the slider handle)
+slider.oninput = function() {
+    output.innerHTML = "Number of Mines: " + this.value;
+    numberOfMines = this.value;
+}
