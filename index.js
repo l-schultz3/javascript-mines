@@ -3,12 +3,20 @@ var ctx = canvas.getContext('2d');
 
 var id = setInterval(frame, 25);
 
-let slider = document.getElementById("mineSlider");
-let output = document.getElementById("numMines");
+let mineSlider = document.getElementById("mineSlider");
+let mineOutput = document.getElementById("numMines");
+let scaleSlider = document.getElementById("scaleSlider");
+let scaleOutput = document.getElementById("numScale");
 
-let size = canvas.width; //side length of grid
-let cells = 16; //number of cells on side
-let scale = size / cells; //size of each cell
+let scale = 40; //size of each cell
+let cellWidth = 16;
+let cellHeight = 16;
+
+let width = scale * cellWidth;
+let height = scale * cellHeight;
+
+canvas.width = width;
+canvas.height = height;
 
 let numberOfMines = 40; //the total number of mines that need to placed on board
 let currentNumberOfMines = 0; //the current number of mines placed on board
@@ -43,8 +51,8 @@ let flagMode = false;
 
 let gameStarted = false;
 
-initializeArray(masterCellArray, cells);
-initializeArray(playerCellArray, cells);
+initializeArray(masterCellArray);
+initializeArray(playerCellArray);
 
 showArray();
 
@@ -58,17 +66,10 @@ document.onkeypress = function(evt) {
 	}
 };
 
-function loopThroughEveryCell(array) {
-	for (let i = 0; i < cells; i++) {
-		for (let j = 0; j < cells; j++) {
-		}
-	}
-}
-
-function initializeArray(array, arraySize) { //function used to set arrays to full size needed for game
-	for (let i = 0; i < arraySize; i++) {
+function initializeArray(array) { //function used to set arrays to full size needed for game
+	for (let i = 0; i < cellHeight; i++) {
 		array.push([]);
-		for (let j = 0; j < cells; j++) {
+		for (let j = 0; j < cellWidth; j++) {
 			array[i].push(0);
 		}
 	}
@@ -76,10 +77,10 @@ function initializeArray(array, arraySize) { //function used to set arrays to fu
 
 function placeMines() {
 	while (currentNumberOfMines < numberOfMines) {
-		for (let i = 0; i < cells; i++) {
-			for (let j = 0; j < cells; j++) {
+		for (let i = 0; i < cellHeight; i++) {
+			for (let j = 0; j < cellWidth; j++) {
 				if (masterCellArray[i][j] != 15) {
-					if (Math.random() < 0.1 && currentNumberOfMines < numberOfMines) {
+					if (Math.random() < 0.01 && currentNumberOfMines < numberOfMines) {
 						masterCellArray[i][j] = 9;
 						currentNumberOfMines++;
 					}
@@ -90,8 +91,8 @@ function placeMines() {
 }
 
 function checkAdjacent() {
-	for (let i = 0; i < cells; i++) {
-		for (let j = 0; j < cells; j++) {
+	for (let i = 0; i < cellHeight; i++) {
+		for (let j = 0; j < cellWidth; j++) {
 			checkCellsAdjacent(i, j, i-1, j-1);
 			checkCellsAdjacent(i, j, i-1, j);
 			checkCellsAdjacent(i, j, i-1, j+1);
@@ -135,7 +136,7 @@ function showArray() {
 				ctx.fillStyle = 'gray';
 				ctx.fillRect(j*scale,i*scale,scale,scale);
 				ctx.fillStyle = 'black';
-				ctx.fillRect(j*scale,i*scale,scale-2,scale-2)
+				ctx.fillRect(j*scale + 1,i*scale + 1,scale-2,scale-2);
 			} else if (playerCellArray[i][j] === 13) {
 				ctx.beginPath();
 				ctx.fillStyle = 'white';
@@ -169,7 +170,7 @@ function checkWin() {
 
 	for (let i = 0; i < playerCellArray.length; i++) {
 		for (let j = 0; j < playerCellArray[i].length; j++) {
-			if (playerCellArray[i][j] === 0 && masterCellArray[i][j] != 9) {
+			if ((playerCellArray[i][j] === 0 && masterCellArray[i][j] != 9) || (playerCellArray[i][j] === 12 && masterCellArray[i][j] != 9))  {
 				checkForClosedCells = true;
 			} else if (playerCellArray[i][j] === 9) {
 				lose = true;
@@ -273,12 +274,12 @@ function frame() {
 
 	if (win) {
 		winImage.onload = function() {
-			ctx.drawImage(winImage, 0, 0, size, size);
+			ctx.drawImage(winImage, 0, 0, canvas.width, canvas.height);
 		}
 		winImage.src = "images/win.jpg";
 	} else if (lose) {
 		loseImage.onload = function() {
-			ctx.drawImage(loseImage, 0, 0, size, size);
+			ctx.drawImage(loseImage, 0, 0, canvas.width, canvas.height);
 		}
 		loseImage.src = "images/lose.jpg";
 	} else {
@@ -300,8 +301,8 @@ function restart() {
 
 	gameStarted = false;
 
-	initializeArray(masterCellArray, cells);
-	initializeArray(playerCellArray, cells);
+	initializeArray(masterCellArray);
+	initializeArray(playerCellArray);
 
 	console.log(masterCellArray);
 
@@ -310,10 +311,24 @@ function restart() {
 
 //hi luke, it's maher, I helped you in this project, better give me credit when you hand it in. Mercer you're gonna read this sooo you're a witness.
 
-output.innerHTML = "Number of Mines: " + slider.value; // Display the default slider value
+mineOutput.innerHTML = "Number of Mines: " + mineSlider.value; // Display the default slider value
 
 // Update the current slider value (each time you drag the slider handle)
-slider.oninput = function() {
-    output.innerHTML = "Number of Mines: " + this.value;
+mineSlider.oninput = function() {
+    mineOutput.innerHTML = "Number of Mines: " + this.value;
     numberOfMines = this.value;
+}
+
+scaleOutput.innerHTML = "Scale: " + scaleSlider.value;
+
+scaleSlider.oninput = function() {
+	scale = this.value;
+
+	width = scale * cellWidth;
+	height = scale * cellHeight;
+
+	canvas.width = width;
+	canvas.height = height;
+
+	scaleOutput.innerHTML = "Scale: " + scaleSlider.value;
 }
