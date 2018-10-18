@@ -1,14 +1,18 @@
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
-var id = setInterval(frame, 25);
+var id = setInterval(frame, 10);
 
 let mineSlider = document.getElementById("mineSlider");
 let mineOutput = document.getElementById("numMines");
 let scaleSlider = document.getElementById("scaleSlider");
 let scaleOutput = document.getElementById("numScale");
+let widthSlider = document.getElementById("widthSlider");
+let widthOutput = document.getElementById("numWidth");
+let heightSlider = document.getElementById("heightSlider");
+let heightOutput = document.getElementById("numHeight");
 
-let scale = 40; //size of each cell
+let scale = scaleSlider.value; //size of each cell
 let cellWidth = 16;
 let cellHeight = 16;
 
@@ -208,29 +212,31 @@ function getMousePos(evt) {
 document.body.onmousedown = function(evt) {
 	mouseDown = evt.button;
 	mousePos = getMousePos(evt);
-	mouseX = Math.floor(mousePos.x / scale);
-	mouseY = Math.floor(mousePos.y / scale);
-	if (mouseDown === 0) {
-		if (gameStarted) {
-			if (flagMode) {
-				placeFlag(mouseY, mouseX);
-			} else {
-				if (playerCellArray[mouseY][mouseX] != 12) {
-					leftPressed(mouseY, mouseX);
+	if ((mousePos.x >= 0 && mousePos.y >= 0) && (mousePos.x <= width && mousePos.y <= height)) {
+		mouseX = Math.floor(mousePos.x / scale);
+		mouseY = Math.floor(mousePos.y / scale);
+		if (mouseDown === 0) {
+			if (gameStarted) {
+				if (flagMode) {
+					placeFlag(mouseY, mouseX);
+				} else {
+					if (playerCellArray[mouseY][mouseX] != 12) {
+						leftPressed(mouseY, mouseX);
+					}
 				}
+			} else {
+				runHoldPlace(15);
+				placeMines();
+				runHoldPlace(0);
+				checkAdjacent();
+
+				leftPressed(mouseY, mouseX);
+
+				gameStarted = true;
 			}
-		} else {
-			runHoldPlace(15);
-			placeMines();
-			runHoldPlace(0);
-			checkAdjacent();
-
-			leftPressed(mouseY, mouseX);
-
-			gameStarted = true;
+		} else if (mouseDown === 2) {
+			placeFlag(mouseY, mouseX);
 		}
-	} else if (mouseDown === 2) {
-		placeFlag(mouseY, mouseX);
 	}
 }
 
@@ -273,21 +279,25 @@ function frame() {
 	document.getElementById("flag").innerHTML = "Number of Flags: " + numberOfFlags;
 
 	if (win) {
-		winImage.onload = function() {
-			ctx.drawImage(winImage, 0, 0, canvas.width, canvas.height);
-		}
-		winImage.src = "images/win.jpg";
+		playerCellArray = masterCellArray;
+		showArray();
+
+		alert("YOU WIN\n\nClick the OK to play again");
+
+		restart();
 	} else if (lose) {
-		loseImage.onload = function() {
-			ctx.drawImage(loseImage, 0, 0, canvas.width, canvas.height);
-		}
-		loseImage.src = "images/lose.jpg";
+		playerCellArray = masterCellArray;
+		showArray();
+
+		alert("YOU LOSE\n\nClick the OK to play again");
+
+		restart();
 	} else {
 		showArray();
 	}
 }
 
-function restart() {
+function restart() { //restarts the game
 	currentNumberOfMines = 0; //the current number of mines placed on board
 	numberOfFlags = 0;
 
@@ -297,14 +307,16 @@ function restart() {
 	lose = false;
 	flagMode = false;
 
-	console.log(masterCellArray);
+	width = scale * cellWidth;
+	height = scale * cellHeight;
+
+	canvas.width = width;
+	canvas.height = height;
 
 	gameStarted = false;
 
 	initializeArray(masterCellArray);
 	initializeArray(playerCellArray);
-
-	console.log(masterCellArray);
 
 	showArray();
 }
@@ -317,6 +329,8 @@ mineOutput.innerHTML = "Number of Mines: " + mineSlider.value; // Display the de
 mineSlider.oninput = function() {
     mineOutput.innerHTML = "Number of Mines: " + this.value;
     numberOfMines = this.value;
+
+    restart();
 }
 
 scaleOutput.innerHTML = "Scale: " + scaleSlider.value;
@@ -332,3 +346,24 @@ scaleSlider.oninput = function() {
 
 	scaleOutput.innerHTML = "Scale: " + scaleSlider.value;
 }
+
+widthOutput.innerHTML = "Width of Play Area: " + widthSlider.value; // Display the default slider value
+
+// Update the current slider value (each time you drag the slider handle)
+widthSlider.oninput = function() {
+    widthOutput.innerHTML = "Width of Play Area: " + this.value;
+    cellWidth = this.value;
+
+    restart();
+}
+
+heightOutput.innerHTML = "Height of Play Area: " + heightSlider.value; // Display the default slider value
+
+// Update the current slider value (each time you drag the slider handle)
+heightSlider.oninput = function() {
+    heightOutput.innerHTML = "Height of Play Area: " + this.value;
+    cellHeight = this.value;
+
+    restart();
+}
+
