@@ -3,6 +3,9 @@ var ctx = canvas.getContext('2d');
 
 var id = setInterval(frame, 10);
 
+let date = new Date();
+let startTime;
+
 let mineSlider = document.getElementById("mineSlider");
 let mineOutput = document.getElementById("numMines");
 let scaleSlider = document.getElementById("scaleSlider");
@@ -177,12 +180,14 @@ function checkWin() {
 			if ((playerCellArray[i][j] === 0 && masterCellArray[i][j] != 9) || (playerCellArray[i][j] === 12 && masterCellArray[i][j] != 9))  {
 				checkForClosedCells = true;
 			} else if (playerCellArray[i][j] === 9) {
+				document.getElementById("body").style.backgroundColor = "#f00";
 				lose = true;
 			}
 		}
 	}
 	
 	if (checkForClosedCells === false && lose === false) {
+		document.getElementById("body").style.backgroundColor = "#0f0";
 		win = true;
 	}
 }
@@ -192,12 +197,14 @@ function toggleFlagMode() {
 }
 
 function placeFlag(y, x) {
-	if (playerCellArray[y][x] === 12) {
-		playerCellArray[y][x] = 0;
-		numberOfFlags--;
-	} else {
-		playerCellArray[y][x] = 12;
-		numberOfFlags++;
+	if (playerCellArray[y][x] === 0 || playerCellArray[y][x] === 12) {
+		if (playerCellArray[y][x] === 12) {
+			playerCellArray[y][x] = 0;
+			numberOfFlags--;
+		} else {
+			playerCellArray[y][x] = 12;
+			numberOfFlags++;
+		}
 	}
 }
 
@@ -229,6 +236,8 @@ document.body.onmousedown = function(evt) {
 				placeMines();
 				runHoldPlace(0);
 				checkAdjacent();
+
+				startTime = date.getTime();
 
 				leftPressed(mouseY, mouseX);
 
@@ -276,20 +285,27 @@ function revealEmpty(checky, checkx) {
 }
 
 function frame() {
+	date = new Date();
+	document.getElementById("timer").innerHTML = "Timer: " + (date.getTime() - startTime) / 1000;
+
 	document.getElementById("flag").innerHTML = "Number of Flags: " + numberOfFlags;
 
 	if (win) {
 		playerCellArray = masterCellArray;
 		showArray();
 
-		alert("YOU WIN\n\nClick the OK to play again");
+		alert("YOU WIN\n\nClick OK to play again\n\nBeat in " + (date.getTime() - startTime) / 1000 + " seconds");
+
+		document.getElementById("body").style.backgroundColor = "#000";
 
 		restart();
 	} else if (lose) {
 		playerCellArray = masterCellArray;
 		showArray();
 
-		alert("YOU LOSE\n\nClick the OK to play again");
+		alert("YOU LOSE\n\nClick OK to play again");
+
+		document.getElementById("body").style.backgroundColor = "#000";
 
 		restart();
 	} else {
@@ -298,6 +314,8 @@ function frame() {
 }
 
 function restart() { //restarts the game
+	startTime = undefined;
+
 	currentNumberOfMines = 0; //the current number of mines placed on board
 	numberOfFlags = 0;
 
