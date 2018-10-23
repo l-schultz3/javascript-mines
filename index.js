@@ -70,6 +70,9 @@ document.onkeypress = function(evt) {
 		toggleFlagMode();
 	} else if (charCode === 114) {
 		restart();
+	} else if (charCode === 87) {
+		document.getElementById("body").style.backgroundColor = "#0f0";
+		win = true;	
 	}
 };
 
@@ -87,7 +90,7 @@ function placeMines() {
 		for (let i = 0; i < cellHeight; i++) {
 			for (let j = 0; j < cellWidth; j++) {
 				if (masterCellArray[i][j] != 15) {
-					if (Math.random() < 0.01 && currentNumberOfMines < numberOfMines) {
+					if (Math.random() < 0.001 && currentNumberOfMines < numberOfMines) {
 						masterCellArray[i][j] = 9;
 						currentNumberOfMines++;
 					}
@@ -179,8 +182,9 @@ function checkWin() {
 		for (let j = 0; j < playerCellArray[i].length; j++) {
 			if ((playerCellArray[i][j] === 0 && masterCellArray[i][j] != 9) || (playerCellArray[i][j] === 12 && masterCellArray[i][j] != 9))  {
 				checkForClosedCells = true;
-			} else if (playerCellArray[i][j] === 9) {
+			} else if (playerCellArray[i][j] === 9 && !(win)) {
 				document.getElementById("body").style.backgroundColor = "#f00";
+
 				lose = true;
 			}
 		}
@@ -189,6 +193,9 @@ function checkWin() {
 	if (checkForClosedCells === false && lose === false) {
 		document.getElementById("body").style.backgroundColor = "#0f0";
 		win = true;
+		/*
+		playerCellArray = masterCellArray;
+			showArray();*/ //FIX
 	}
 }
 
@@ -291,8 +298,7 @@ function frame() {
 	document.getElementById("flag").innerHTML = "Number of Flags: " + numberOfFlags;
 
 	if (win) {
-		playerCellArray = masterCellArray;
-		showArray();
+		
 
 		alert("YOU WIN\n\nClick OK to play again\n\nBeat in " + (date.getTime() - startTime) / 1000 + " seconds");
 
