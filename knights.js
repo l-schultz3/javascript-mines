@@ -8,6 +8,8 @@ let circlePos;
 let date = new Date();
 let startTime;
 
+let help = false;
+
 let mineSlider = document.getElementById("mineSlider");
 let mineOutput = document.getElementById("numMines");
 let scaleSlider = document.getElementById("scaleSlider");
@@ -48,7 +50,7 @@ let loseImage = new Image();
 let winImage = new Image();
 
 let mouseDown;
-let mousePos;
+let mousePos = {x: -200, y: -200};
 let mouseX;
 let mouseY;
 let charCode;
@@ -64,6 +66,10 @@ initializeArray(masterCellArray);
 initializeArray(playerCellArray);
 
 showArray();
+
+function toggleHelp() { //MAHER'S IDEA
+	help = !help;
+}
 
 document.onkeypress = function(evt) {
 	evt = evt || window.event;
@@ -168,9 +174,12 @@ function showImageOnCell(image, cellValue, source) {
 				}
 			}
 		}
+
+		drawKnightsPath();
 	}
 	image.src = source;
-}
+
+	}
 
 function leftPressed(y, x, checkFlag) {
 	playerCellArray[y][x] = masterCellArray[y][x];
@@ -327,20 +336,24 @@ function frame() {
 		showArray();
 	}
 
-	/*circlePos = getMousePos(evt);*/
+	drawKnightsPath();
+}
 
-	ctx.beginPath();
-    drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 1)), scale / 3);
-    drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 1)), scale / 3);
-    drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 1)), scale / 3);
-    drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 1)), scale / 3);
-    drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 2)), scale / 3);
-    drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 2)), scale / 3);
-    drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 2)), scale / 3);
-    drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 2)), scale / 3);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#00ffff';
-    ctx.stroke();
+function drawKnightsPath() {
+	if (help) {
+		ctx.beginPath();
+    	drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 1)), scale / 3);
+    	drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 1)), scale / 3);
+    	drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 1)), scale / 3);
+    	drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 1)), scale / 3);
+    	drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 2)), scale / 3);
+    	drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 2)), scale / 3);
+    	drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 2)), scale / 3);
+    	drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 2)), scale / 3);
+    	ctx.lineWidth = 2;
+    	ctx.strokeStyle = '#00ffff';
+    	ctx.stroke();
+	}
 }
 
 function drawCircles(x, y, size) {

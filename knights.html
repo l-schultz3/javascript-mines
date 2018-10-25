@@ -44,7 +44,9 @@
             -ms-user-select: none; /* Internet Explorer/Edge */
             user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
         }
-
+        button {
+            margin-top: 3px;
+        }
         
 	</style>
 </head>
@@ -79,6 +81,7 @@
 
         <button onclick="restart()">Restart</button>
         <button onclick="toggleFlagMode()">Flag Mode</button>
+        <button onclick="toggleHelp()">Toggle Help</button>
     </div>
 
     <canvas id="canvas"></canvas>
