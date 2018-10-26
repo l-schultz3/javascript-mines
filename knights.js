@@ -94,11 +94,11 @@ function initializeArray(array) { //function used to set arrays to full size nee
 }
 
 function placeMines() {
-	while (currentNumberOfMines < numberOfMines) {
+	while (currentNumberOfMines <= numberOfMines) {
 		for (let i = 0; i < cellHeight; i++) {
 			for (let j = 0; j < cellWidth; j++) {
 				if (masterCellArray[i][j] != 15) {
-					if (Math.random() < 0.001 && currentNumberOfMines < numberOfMines) {
+					if (Math.random() < 0.001 && currentNumberOfMines <= numberOfMines) {
 						masterCellArray[i][j] = 9;
 						currentNumberOfMines++;
 					}
@@ -353,6 +353,12 @@ function drawKnightsPath() {
     	ctx.lineWidth = 2;
     	ctx.strokeStyle = '#00ffff';
     	ctx.stroke();
+
+    	ctx.beginPath();
+		ctx.arc(mousePos.x - (mousePos.x%scale) + (scale * 0.5), mousePos.y - (mousePos.y%scale) + (scale * 0.5), scale / 3, 0, 2 * Math.PI, false);
+		ctx.lineWidth = 2;
+		ctx.strokeStyle = '#ff0000';
+		ctx.stroke();
 	}
 }
 

@@ -1,0 +1,46 @@
+body {
+    background-color: #000;
+}
+
+p {
+    color: #fff;
+}
+
+canvas { 
+    position: absolute;
+    left: 176px;
+    margin-bottom: 8px;
+}
+
+button {
+    margin-top: 3px;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+}
+
+#infoPannel {
+    background-color: #333;
+    padding-left: 10px;
+    padding-top: -15px;
+    float: left;
+
+    height: 100%; /* Full-height: remove this if you want "auto" height */
+    width: 158px; /* Set the width of the sidebar */
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    z-index: 1; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+    overflow-x: hidden; /* Disable horizontal scroll */
+}
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+}
