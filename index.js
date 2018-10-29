@@ -6,6 +6,8 @@ var id = setInterval(frame, 10);
 let date = new Date();
 let startTime;
 
+let help = false;
+
 let mineSlider = document.getElementById("mineSlider");
 let mineOutput = document.getElementById("numMines");
 let scaleSlider = document.getElementById("scaleSlider");
@@ -14,10 +16,11 @@ let widthSlider = document.getElementById("widthSlider");
 let widthOutput = document.getElementById("numWidth");
 let heightSlider = document.getElementById("heightSlider");
 let heightOutput = document.getElementById("numHeight");
+let gameModeDisplay = document.getElementById("gameModeDisplay");
 
 let scale = scaleSlider.value; //size of each cell
-let cellWidth = 16;
-let cellHeight = 16;
+let cellWidth = 9;
+let cellHeight = 9;
 
 let width = scale * cellWidth;
 let height = scale * cellHeight;
@@ -25,7 +28,7 @@ let height = scale * cellHeight;
 canvas.width = width;
 canvas.height = height;
 
-let numberOfMines = 40; //the total number of mines that need to placed on board
+let numberOfMines = 10; //the total number of mines that need to placed on board
 let currentNumberOfMines = 0; //the current number of mines placed on board
 let numberOfFlags = 0;
 
@@ -42,8 +45,6 @@ let seven = new Image();
 let eight = new Image();
 let mine = new Image();
 let flag = new Image();
-let loseImage = new Image();
-let winImage = new Image();
 
 let mouseDown;
 let mousePos;
@@ -56,12 +57,33 @@ let win = false;
 let lose = false;
 let flagMode = false;
 
+let gameMode = 0; //0 - classic, 1 - knights
+let numberOfGameModes = 2;
+let gameModeNames = ["Classic", "Knights Paths"];
 let gameStarted = false;
 
 initializeArray(masterCellArray);
 initializeArray(playerCellArray);
 
 showArray();
+
+function toggleHelp() { //MAHER'S IDEA
+	help = !help;
+}
+
+gameModeDisplay.innerHTML = "Game Mode: " + gameModeNames[gameMode];
+
+function switchGameMode() {
+	if (gameMode < numberOfGameModes - 1) { //subtract one because gameMode variable starts at zero
+		gameMode++;
+	} else {
+		gameMode = 0;
+	}
+
+	gameModeDisplay.innerHTML = "Game Mode: " + gameModeNames[gameMode];
+
+	restart();
+}
 
 document.onkeypress = function(evt) {
 	evt = evt || window.event;
@@ -103,14 +125,25 @@ function placeMines() {
 function checkAdjacent() {
 	for (let i = 0; i < cellHeight; i++) {
 		for (let j = 0; j < cellWidth; j++) {
-			checkCellsAdjacent(i, j, i-1, j-1);
-			checkCellsAdjacent(i, j, i-1, j);
-			checkCellsAdjacent(i, j, i-1, j+1);
-			checkCellsAdjacent(i, j, i, j-1);
-			checkCellsAdjacent(i, j, i, j+1);
-			checkCellsAdjacent(i, j, i+1, j-1);
-			checkCellsAdjacent(i, j, i+1, j);
-			checkCellsAdjacent(i, j, i+1, j+1);
+			if (gameMode === 0) {
+				checkCellsAdjacent(i, j, i-1, j-1);
+				checkCellsAdjacent(i, j, i-1, j);
+				checkCellsAdjacent(i, j, i-1, j+1);
+				checkCellsAdjacent(i, j, i, j-1);
+				checkCellsAdjacent(i, j, i, j+1);
+				checkCellsAdjacent(i, j, i+1, j-1);
+				checkCellsAdjacent(i, j, i+1, j);
+				checkCellsAdjacent(i, j, i+1, j+1);
+			} else {
+				checkCellsAdjacent(i, j, i-1, j-2);
+				checkCellsAdjacent(i, j, i-1, j+2);
+				checkCellsAdjacent(i, j, i+1, j-2);
+				checkCellsAdjacent(i, j, i+1, j+2);
+				checkCellsAdjacent(i, j, i+2, j-1);
+				checkCellsAdjacent(i, j, i+2, j+1);
+				checkCellsAdjacent(i, j, i-2, j-1);
+				checkCellsAdjacent(i, j, i-2, j+1);
+			}
 
 			if (masterCellArray[i][j] === 0) masterCellArray[i][j] = 13;
 		}
@@ -166,6 +199,8 @@ function showImageOnCell(image, cellValue, source) {
 				}
 			}
 		}
+
+		drawPaths();
 	}
 	image.src = source;
 }
@@ -182,7 +217,7 @@ function checkWin() {
 		for (let j = 0; j < playerCellArray[i].length; j++) {
 			if ((playerCellArray[i][j] === 0 && masterCellArray[i][j] != 9) || (playerCellArray[i][j] === 12 && masterCellArray[i][j] != 9))  {
 				checkForClosedCells = true;
-			} else if (playerCellArray[i][j] === 9 && !(win)) {
+			} else if (playerCellArray[i][j] === 9 && !(win) && !(lose)) {
 				document.getElementById("body").style.backgroundColor = "#f00";
 
 				lose = true;
@@ -193,9 +228,6 @@ function checkWin() {
 	if (checkForClosedCells === false && lose === false) {
 		document.getElementById("body").style.backgroundColor = "#0f0";
 		win = true;
-		/*
-		playerCellArray = masterCellArray;
-			showArray();*/ //FIX
 	}
 }
 
@@ -214,6 +246,13 @@ function placeFlag(y, x) {
 		}
 	}
 }
+
+document.onmousemove = function(evt) {
+	mousePos = getMousePos(evt);
+
+	mouseX = Math.floor(mousePos.x / scale);
+	mouseY = Math.floor(mousePos.y / scale);
+};
 
 function getMousePos(evt) {
 	var rect = canvas.getBoundingClientRect();
@@ -257,15 +296,27 @@ document.body.onmousedown = function(evt) {
 }
 
 function runHoldPlace(value) {
-	holdPlace(mouseY-1, mouseX-1, value);
-	holdPlace(mouseY-1, mouseX, value);
-	holdPlace(mouseY-1, mouseX+1, value);
-	holdPlace(mouseY, mouseX-1, value);
-	holdPlace(mouseY, mouseX, value);
-	holdPlace(mouseY, mouseX+1, value);
-	holdPlace(mouseY+1, mouseX-1, value);
-	holdPlace(mouseY+1, mouseX, value);
-	holdPlace(mouseY+1, mouseX+1, value);
+	if (gameMode === 0) {
+		holdPlace(mouseY-1, mouseX-1, value);
+		holdPlace(mouseY-1, mouseX, value);
+		holdPlace(mouseY-1, mouseX+1, value);
+		holdPlace(mouseY, mouseX-1, value);
+		holdPlace(mouseY, mouseX, value);
+		holdPlace(mouseY, mouseX+1, value);
+		holdPlace(mouseY+1, mouseX-1, value);
+		holdPlace(mouseY+1, mouseX, value);
+		holdPlace(mouseY+1, mouseX+1, value);
+	} else {
+		holdPlace(mouseY-1, mouseX-2, value);
+		holdPlace(mouseY-1, mouseX+2, value);
+		holdPlace(mouseY+1, mouseX-2, value);
+		holdPlace(mouseY+1, mouseX+2, value);
+		holdPlace(mouseY, mouseX, value);
+		holdPlace(mouseY-2, mouseX-1, value);
+		holdPlace(mouseY+2, mouseX-1, value);
+		holdPlace(mouseY-2, mouseX+1, value);
+		holdPlace(mouseY+2, mouseX+1, value);
+	}
 }
 
 function holdPlace(y, x, value) {
@@ -275,14 +326,25 @@ function holdPlace(y, x, value) {
 }
 
 function onEmpty(y, x) {
-	revealEmpty(y-1, x-1);
-	revealEmpty(y-1, x);
-	revealEmpty(y-1, x+1);
-	revealEmpty(y, x-1);
-	revealEmpty(y, x+1);
-	revealEmpty(y+1, x-1);
-	revealEmpty(y+1, x);
-	revealEmpty(y+1, x+1);
+	if (gameMode === 0) {
+		revealEmpty(y-1, x-1);
+		revealEmpty(y-1, x);
+		revealEmpty(y-1, x+1);
+		revealEmpty(y, x-1);
+		revealEmpty(y, x+1);
+		revealEmpty(y+1, x-1);
+		revealEmpty(y+1, x);
+		revealEmpty(y+1, x+1);
+	} else {
+		revealEmpty(y-1, x-2);
+		revealEmpty(y-1, x+2);
+		revealEmpty(y+1, x-2);
+		revealEmpty(y+1, x+2);
+		revealEmpty(y-2, x-1);
+		revealEmpty(y+2, x-1);
+		revealEmpty(y-2, x+1);
+		revealEmpty(y+2, x+1);
+	}
 }
 
 function revealEmpty(checky, checkx) {
@@ -298,7 +360,6 @@ function frame() {
 	document.getElementById("flag").innerHTML = "Number of Flags: " + numberOfFlags;
 
 	if (win) {
-		
 
 		alert("YOU WIN\n\nClick OK to play again\n\nBeat in " + (date.getTime() - startTime) / 1000 + " seconds");
 
@@ -317,6 +378,55 @@ function frame() {
 	} else {
 		showArray();
 	}
+
+	drawPaths();
+}
+
+function drawPaths() {
+	if (help) {
+		if (gameMode === 0) {
+			ctx.beginPath();
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 1)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 1)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 1)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 1)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 1)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 1)), scale / 3);
+			ctx.lineWidth = 2;
+			ctx.strokeStyle = '#00ffff';
+			ctx.stroke();
+
+		} else if (gameMode === 1) {
+			ctx.beginPath();
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 1)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 1)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 1)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 2)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 1)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 2)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) - (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 2)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) - (scale * 2)), scale / 3);
+			drawCircles((mousePos.x - (mousePos.x%scale) + (scale * 0.5) + (scale * 1)), (mousePos.y - (mousePos.y%scale) + (scale * 0.5) + (scale * 2)), scale / 3);
+			ctx.lineWidth = 2;
+			ctx.strokeStyle = '#00ffff';
+			ctx.stroke();
+		}
+
+    	ctx.beginPath();
+		ctx.arc(mousePos.x - (mousePos.x%scale) + (scale * 0.5), mousePos.y - (mousePos.y%scale) + (scale * 0.5), scale / 3, 0, 2 * Math.PI, false);
+		ctx.lineWidth = 2;
+		ctx.strokeStyle = '#ff0000';
+		ctx.stroke();
+	}
+}
+
+function drawCircles(x, y, size) {
+	ctx.beginPath();
+	ctx.arc(x, y, size, 0, 2 * Math.PI, false);
+	ctx.lineWidth = 2;
+	ctx.strokeStyle = '#00ffff';
+	ctx.stroke();
 }
 
 function restart() { //restarts the game

@@ -16,32 +16,35 @@
         <p id="numMines"></p>
 
         <div class="slidecontainer">
-            <input type="range" min="10" max="64" value="40" class="slider" id="mineSlider">
+            <input type="range" min="10" max="64" value="10" class="slider" id="mineSlider">
         </div>
 
         <p id="numScale"></p>
 
         <div class="slidecontainer">
-            <input type="range" min="10" max="100" value="40" class="slider" id="scaleSlider">
+            <input type="range" min="15" max="100" value="40" class="slider" id="scaleSlider">
         </div>
 
         <p id="numWidth"></p>
 
         <div class="slidecontainer">
-            <input type="range" min="10" max="30" value="16" class="slider" id="widthSlider">
+            <input type="range" min="9" max="30" value="9" class="slider" id="widthSlider">
         </div>
 
         <p id="numHeight"></p>
 
         <div class="slidecontainer">
-            <input type="range" min="10" max="30" value="16" class="slider" id="heightSlider">
+            <input type="range" min="9" max="30" value="9" class="slider" id="heightSlider">
         </div>
 
         <p id="timer"></p>
 
-        <button onclick="restart()">Restart</button>
+        <button onclick="restart()">Restart (r)</button>
         <button onclick="toggleFlagMode()">Flag Mode</button>
-        <button><a href="knights.html">Knightsweeper</a></button>
+        <button onclick="switchGameMode()">Switch Gamemode</button>
+        <button onclick="toggleHelp()">Toggle Path Guide</button>
+
+        <p id="gameModeDisplay"></p>
     </div>
 
     <canvas id="canvas"></canvas>
