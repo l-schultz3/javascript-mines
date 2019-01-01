@@ -67,186 +67,6 @@ initializeArray(playerCellArray);
 
 showArray();
 
-function toggleHelp() { //MAHER'S IDEA
-	help = !help;
-}
-
-gameModeDisplay.innerHTML = "Game Mode: " + gameModeNames[gameMode];
-
-function switchGameMode() {
-	if (gameMode < numberOfGameModes - 1) { //subtract one because gameMode variable starts at zero
-		gameMode++;
-	} else {
-		gameMode = 0;
-	}
-
-	gameModeDisplay.innerHTML = "Game Mode: " + gameModeNames[gameMode];
-
-	restart();
-}
-
-document.onkeypress = function(evt) {
-	evt = evt || window.event;
-	charCode = evt.keyCode || evt.which;
-	if (charCode === 102) {
-		toggleFlagMode();
-	} else if (charCode === 114) {
-		restart();
-	} else if (charCode === 87) {
-		document.getElementById("body").style.backgroundColor = "#0f0";
-		win = true;	
-	}
-};
-
-function initializeArray(array) { //function used to set arrays to full size needed for game
-	for (let i = 0; i < cellHeight; i++) {
-		array.push([]);
-		for (let j = 0; j < cellWidth; j++) {
-			array[i].push(0);
-		}
-	}
-}
-
-function placeMines() {
-	while (currentNumberOfMines <= numberOfMines) {
-		for (let i = 0; i < cellHeight; i++) {
-			for (let j = 0; j < cellWidth; j++) {
-				if (masterCellArray[i][j] != 15) {
-					if (Math.random() < 0.001 && currentNumberOfMines <= numberOfMines) {
-						masterCellArray[i][j] = 9;
-						currentNumberOfMines++;
-					}
-				}
-			}
-		}
-	}
-}
-
-function checkAdjacent() {
-	for (let i = 0; i < cellHeight; i++) {
-		for (let j = 0; j < cellWidth; j++) {
-			if (gameMode === 0) {
-				checkCellsAdjacent(i, j, i-1, j-1);
-				checkCellsAdjacent(i, j, i-1, j);
-				checkCellsAdjacent(i, j, i-1, j+1);
-				checkCellsAdjacent(i, j, i, j-1);
-				checkCellsAdjacent(i, j, i, j+1);
-				checkCellsAdjacent(i, j, i+1, j-1);
-				checkCellsAdjacent(i, j, i+1, j);
-				checkCellsAdjacent(i, j, i+1, j+1);
-			} else {
-				checkCellsAdjacent(i, j, i-1, j-2);
-				checkCellsAdjacent(i, j, i-1, j+2);
-				checkCellsAdjacent(i, j, i+1, j-2);
-				checkCellsAdjacent(i, j, i+1, j+2);
-				checkCellsAdjacent(i, j, i+2, j-1);
-				checkCellsAdjacent(i, j, i+2, j+1);
-				checkCellsAdjacent(i, j, i-2, j-1);
-				checkCellsAdjacent(i, j, i-2, j+1);
-			}
-
-			if (masterCellArray[i][j] === 0) masterCellArray[i][j] = 13;
-		}
-	}
-}
-
-function checkCellsAdjacent(y, x, checky, checkx) {
-	try {
-		if (masterCellArray[y][x] != 9) {
-			if (masterCellArray[checky][checkx] === 9) {
-				masterCellArray[y][x]++;
-			}
-		}
-	} catch { }
-}
-
-function showArray() {
-	showImageOnCell(one, 1, "images/1.png");
-	showImageOnCell(two, 2, "images/2.png");
-	showImageOnCell(three, 3, "images/3.png");
-	showImageOnCell(four, 4, "images/4.png");
-	showImageOnCell(five, 5, "images/5.png");
-	showImageOnCell(six, 6, "images/6.png");
-	showImageOnCell(seven, 7, "images/7.png");
-	showImageOnCell(eight, 8, "images/8.png");
-	showImageOnCell(mine, 9, "images/mine.png");
-	showImageOnCell(flag, 12, "images/flag.png");
-
-	for (i = 0; i < playerCellArray.length; i++) {
-		for (j = 0; j < playerCellArray[i].length; j++) {
-			if (playerCellArray[i][j] === 0) {
-				ctx.beginPath();
-				ctx.fillStyle = 'gray';
-				ctx.fillRect(j*scale,i*scale,scale,scale);
-				ctx.fillStyle = 'black';
-				ctx.fillRect(j*scale + 1,i*scale + 1,scale-2,scale-2);
-			} else if (playerCellArray[i][j] === 13) {
-				ctx.beginPath();
-				ctx.fillStyle = 'white';
-				ctx.fillRect(j*scale,i*scale,scale,scale);
-				onEmpty(i, j);
-			}
-		}
-	}
-}
-
-function showImageOnCell(image, cellValue, source) {
-	image.onload = function() {
-		for (i = 0; i < playerCellArray.length; i++) {
-			for (j = 0; j < playerCellArray[i].length; j++) {
-				if (playerCellArray[i][j] === cellValue) {
-					ctx.drawImage(image, j*scale, i*scale, scale, scale);
-				}
-			}
-		}
-
-		drawPaths();
-	}
-	image.src = source;
-}
-
-function leftPressed(y, x, checkFlag) {
-	playerCellArray[y][x] = masterCellArray[y][x];
-	checkWin();
-}
-
-function checkWin() {
-	checkForClosedCells = false;
-
-	for (let i = 0; i < playerCellArray.length; i++) {
-		for (let j = 0; j < playerCellArray[i].length; j++) {
-			if ((playerCellArray[i][j] === 0 && masterCellArray[i][j] != 9) || (playerCellArray[i][j] === 12 && masterCellArray[i][j] != 9))  {
-				checkForClosedCells = true;
-			} else if (playerCellArray[i][j] === 9 && !(win) && !(lose)) {
-				document.getElementById("body").style.backgroundColor = "#f00";
-
-				lose = true;
-			}
-		}
-	}
-	
-	if (checkForClosedCells === false && lose === false) {
-		document.getElementById("body").style.backgroundColor = "#0f0";
-		win = true;
-	}
-}
-
-function toggleFlagMode() {
-	flagMode = !flagMode;
-}
-
-function placeFlag(y, x) {
-	if (playerCellArray[y][x] === 0 || playerCellArray[y][x] === 12) {
-		if (playerCellArray[y][x] === 12) {
-			playerCellArray[y][x] = 0;
-			numberOfFlags--;
-		} else {
-			playerCellArray[y][x] = 12;
-			numberOfFlags++;
-		}
-	}
-}
-
 document.onmousemove = function(evt) {
 	mousePos = getMousePos(evt);
 
@@ -295,7 +115,95 @@ document.body.onmousedown = function(evt) {
 	}
 }
 
-function runHoldPlace(value) {
+document.onkeypress = function(evt) {
+	evt = evt || window.event;
+	charCode = evt.keyCode || evt.which;
+	if (charCode === 102) { //f
+		toggleFlagMode();
+	} else if (charCode === 114) {//r
+		restart();
+	} else if (charCode === 87) {//W
+		document.getElementById("body").style.backgroundColor = "#0f0";
+		win = true;	
+	}
+};
+
+
+function leftPressed(y, x, checkFlag) {
+	playerCellArray[y][x] = masterCellArray[y][x];
+	checkWin();
+}
+
+function initializeArray(array) { //function used to set arrays to full size needed for game
+	for (let i = 0; i < cellHeight; i++) {
+		array.push([]);
+		for (let j = 0; j < cellWidth; j++) {
+			array[i].push(0);
+		}
+	}
+}
+
+function placeMines() { //function used to plane mines randomly across the master array
+	/*
+		as the array gets larger, and mines fewer, there is a less chance of mines being spaced out evenly across the play area
+		this can be addressed by changing the comparison against Math.random() a smaller number, but that slows down placing the mines
+	*/
+	while (currentNumberOfMines <= numberOfMines) {
+		for (let i = 0; i < cellHeight; i++) {
+			for (let j = 0; j < cellWidth; j++) {
+				if (masterCellArray[i][j] != 15) {
+					if (Math.random() < 0.001 && currentNumberOfMines <= numberOfMines) {
+						masterCellArray[i][j] = 9;
+						currentNumberOfMines++;
+					}
+				}
+			}
+		}
+	}
+}
+
+function checkAdjacent() { //function to get the amount of mines in the path of each cell
+	for (let i = 0; i < cellHeight; i++) {
+		for (let j = 0; j < cellWidth; j++) {
+			if (gameMode === 0) { //classic
+				checkCellsAdjacent(i, j, i-1, j-1);
+				checkCellsAdjacent(i, j, i-1, j);
+				checkCellsAdjacent(i, j, i-1, j+1);
+				checkCellsAdjacent(i, j, i, j-1);
+				checkCellsAdjacent(i, j, i, j+1);
+				checkCellsAdjacent(i, j, i+1, j-1);
+				checkCellsAdjacent(i, j, i+1, j);
+				checkCellsAdjacent(i, j, i+1, j+1);
+			} else if (gameMode === 1) { //knights paths
+				checkCellsAdjacent(i, j, i-1, j-2);
+				checkCellsAdjacent(i, j, i-1, j+2);
+				checkCellsAdjacent(i, j, i+1, j-2);
+				checkCellsAdjacent(i, j, i+1, j+2);
+				checkCellsAdjacent(i, j, i+2, j-1);
+				checkCellsAdjacent(i, j, i+2, j+1);
+				checkCellsAdjacent(i, j, i-2, j-1);
+				checkCellsAdjacent(i, j, i-2, j+1);
+			}
+
+			if (masterCellArray[i][j] === 0) masterCellArray[i][j] = 13;
+		}
+	}
+}
+
+function checkCellsAdjacent(y, x, checky, checkx) {
+	/*
+		this code needs to be in a try-catch to prevent throwing an out-of-bounds error when checking cells on edges of array
+	*/
+	try {
+		if (masterCellArray[y][x] != 9) {
+			if (masterCellArray[checky][checkx] === 9) {
+				masterCellArray[y][x]++;
+			}
+		}
+	} catch { }
+}
+
+function runHoldPlace(value) { //blocks the cells in the path of the cell first pressed so that the game isn't lost on the first move
 	if (gameMode === 0) {
 		holdPlace(mouseY-1, mouseX-1, value);
 		holdPlace(mouseY-1, mouseX, value);
@@ -306,7 +214,7 @@ function runHoldPlace(value) {
 		holdPlace(mouseY+1, mouseX-1, value);
 		holdPlace(mouseY+1, mouseX, value);
 		holdPlace(mouseY+1, mouseX+1, value);
-	} else {
+	} else if (gameMode === 1) {
 		holdPlace(mouseY-1, mouseX-2, value);
 		holdPlace(mouseY-1, mouseX+2, value);
 		holdPlace(mouseY+1, mouseX-2, value);
@@ -320,12 +228,15 @@ function runHoldPlace(value) {
 }
 
 function holdPlace(y, x, value) {
+	/*
+		this code needs to be in a try-catch to prevent throwing an out-of-bounds error when checking cells on edges of array
+	*/
 	try {
 		masterCellArray[y][x] = value;
 	} catch { }
 }
 
-function onEmpty(y, x) {
+function onEmpty(y, x) { //function runs if a zero cell is revealed, to reveal all the cells in immediate path
 	if (gameMode === 0) {
 		revealEmpty(y-1, x-1);
 		revealEmpty(y-1, x);
@@ -335,7 +246,7 @@ function onEmpty(y, x) {
 		revealEmpty(y+1, x-1);
 		revealEmpty(y+1, x);
 		revealEmpty(y+1, x+1);
-	} else {
+	} else if (gameMode === 1) {
 		revealEmpty(y-1, x-2);
 		revealEmpty(y-1, x+2);
 		revealEmpty(y+1, x-2);
@@ -348,10 +259,80 @@ function onEmpty(y, x) {
 }
 
 function revealEmpty(checky, checkx) {
+	/*
+		this code needs to be in a try-catch to prevent throwing an out-of-bounds error when checking cells on edges of array
+	*/
 	try {
 		leftPressed(checky, checkx);
 	} catch { }
 }
+
+function checkWin() {
+	checkForClosedCells = false;
+
+	for (let i = 0; i < playerCellArray.length; i++) {
+		for (let j = 0; j < playerCellArray[i].length; j++) {
+			if ((playerCellArray[i][j] === 0 && masterCellArray[i][j] != 9) || (playerCellArray[i][j] === 12 && masterCellArray[i][j] != 9))  {
+				checkForClosedCells = true;
+			} else if (playerCellArray[i][j] === 9 && !(win) && !(lose)) {
+				document.getElementById("body").style.backgroundColor = "#f00";
+
+				lose = true;
+			}
+		}
+	}
+	
+	if (checkForClosedCells === false && lose === false) {
+		document.getElementById("body").style.backgroundColor = "#0f0";
+		win = true;
+	}
+}
+
+function showArray() { //function responsible for updating screen with current game state
+	showImageOnCell(one, 1, "images/1.png");
+	showImageOnCell(two, 2, "images/2.png");
+	showImageOnCell(three, 3, "images/3.png");
+	showImageOnCell(four, 4, "images/4.png");
+	showImageOnCell(five, 5, "images/5.png");
+	showImageOnCell(six, 6, "images/6.png");
+	showImageOnCell(seven, 7, "images/7.png");
+	showImageOnCell(eight, 8, "images/8.png");
+	showImageOnCell(mine, 9, "images/mine.png");
+	showImageOnCell(flag, 12, "images/flag.png");
+
+	for (i = 0; i < playerCellArray.length; i++) {
+		for (j = 0; j < playerCellArray[i].length; j++) {
+			if (playerCellArray[i][j] === 0) {
+				ctx.beginPath();
+				ctx.fillStyle = 'gray';
+				ctx.fillRect(j*scale,i*scale,scale,scale);
+				ctx.fillStyle = 'black';
+				ctx.fillRect(j*scale + 1,i*scale + 1,scale-2,scale-2);
+			} else if (playerCellArray[i][j] === 13) {
+				ctx.beginPath();
+				ctx.fillStyle = 'white';
+				ctx.fillRect(j*scale,i*scale,scale,scale);
+				onEmpty(i, j);
+			}
+		}
+	}
+}
+
+function showImageOnCell(image, cellValue, source) {
+	image.onload = function() {
+		for (i = 0; i < playerCellArray.length; i++) {
+			for (j = 0; j < playerCellArray[i].length; j++) {
+				if (playerCellArray[i][j] === cellValue) {
+					ctx.drawImage(image, j*scale, i*scale, scale, scale);
+				}
+			}
+		}
+
+		drawPaths();
+	}
+	image.src = source;
+}
+
 
 function frame() {
 	date = new Date();
@@ -455,7 +436,42 @@ function restart() { //restarts the game
 	showArray();
 }
 
-//hi luke, it's maher, I helped you in this project, better give me credit when you hand it in. Mercer you're gonna read this sooo you're a witness.
+function toggleHelp() { //MAHER'S IDEA
+	help = !help;
+}
+
+function toggleFlagMode() {
+	flagMode = !flagMode;
+}
+
+gameModeDisplay.innerHTML = "Game Mode: " + gameModeNames[gameMode];
+
+function switchGameMode() {
+	/*
+		currently, there are two game modes. This code allows for easy implementation of future game modes
+	*/
+	if (gameMode < numberOfGameModes - 1) { //subtract one because gameMode variable starts at zero
+		gameMode++;
+	} else {
+		gameMode = 0;
+	}
+
+	gameModeDisplay.innerHTML = "Game Mode: " + gameModeNames[gameMode];
+
+	restart();
+}
+
+function placeFlag(y, x) { //function to flag and unflag a cell
+	if (playerCellArray[y][x] === 0 || playerCellArray[y][x] === 12) {
+		if (playerCellArray[y][x] === 12) {
+			playerCellArray[y][x] = 0;
+			numberOfFlags--;
+		} else {
+			playerCellArray[y][x] = 12;
+			numberOfFlags++;
+		}
+	}
+}
 
 mineOutput.innerHTML = "Number of Mines: " + mineSlider.value; // Display the default slider value
 
